@@ -26,7 +26,7 @@ const Register = ({location,history}) => {
 
     const submitHandler = (e) => {
         e.preventDefault()
-        dispatch(register(email, password))
+        dispatch(register(name,email, password))
 
     }
   return (

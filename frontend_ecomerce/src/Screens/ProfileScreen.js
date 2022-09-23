@@ -1,8 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Header from '../Components/Header'
-
+import {useDispatch, useSelector} from "react-redux"
+import { getUserDetails } from '../app/Actions/UserActions'
+import moment from 'moment'
+import { ProfileTabs } from '../Components/profileComponents/ProfileTabs'
 const ProfileScreen = () => {
     window.scrollTo(0,0)
+
+    const dispatch=useDispatch()
+    
+    const userLogin=useSelector((state)=>state.userLogin)
+    const { error, loading, userInfo } = userLogin
+    useEffect(() => {
+      dispatch(getUserDetails("profile"))
+    }, [dispatch])
+    
   return (
       <>
           <Header />
@@ -16,8 +28,8 @@ const ProfileScreen = () => {
                                   <img src="./images/user.png" alt="userprofileimage"/>
                               </div>
                               <div className="author-card-details col-md-7">
-                                  <h5 className="author-card-name mb-2"><strong>kj</strong></h5><span
-                                      className="author-card-position">Joined August 31, 2022</span>
+                                  <h5 className="author-card-name mb-2"><strong>{userInfo.name}</strong></h5><span
+                                      className="author-card-position">Joined {moment(userInfo.createdAt).format('LL')}</span>
                               </div>
                           </div>
                       </div>
@@ -35,33 +47,7 @@ const ProfileScreen = () => {
                       </div>
                   </div>
                   <div className="tab-content col-lg-8 pb-5 pt-lg-0 pt-3" id="v-pills-tabContent">
-                      <div className="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
-                          <div>
-                              <div className="Toastify"></div>
-                              <div className="Toastify"></div>
-                          </div>
-                          <form className="row  form-container">
-                              <div className="col-md-6">
-                                  <div className="form"><label for="account-fn">UserName</label>
-                                      <input className="form-control"
-                                          type="text" required="" value="kj" />
-                                  </div>
-                              </div>
-                              <div className="col-md-6">
-                                  <div className="form"><label for="account-email">E-mail Address</label><input className="form-control"
-                                      type="email" required="" value="irija@gmail.com"/></div>
-                              </div>
-                              <div className="col-md-6">
-                                  <div className="form"><label for="account-pass">New Password</label>
-                                      <input className="form-control" type="password" value="1234"/>
-                                     </div>
-                              </div>
-                              <div className="col-md-6">
-                                  <div className="form"><label for="account-confirm-pass">Confirm Password</label><input
-                                      className="form-control" type="password" value="1234"/></div>
-                              </div><button type="submit">Update Profile</button>
-                          </form>
-                      </div>
+                      <ProfileTabs/>
                       <div className="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                           <div className=" d-flex justify-content-center align-items-center">
                               <div className="table-responsive">
