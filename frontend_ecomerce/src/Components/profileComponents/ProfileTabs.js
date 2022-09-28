@@ -4,6 +4,7 @@ import { Toast } from '../LoadingError/Toast'
 import Loading from '../LoadingError/Loading'
 import Message from '../LoadingError/Error' 
 import { toast } from 'react-toastify'
+import {updateUserProfile } from '../../app/Actions/UserActions'
 
 export const ProfileTabs = () => {
   const [name, setName] = useState("")
@@ -26,6 +27,9 @@ export const ProfileTabs = () => {
   const userDetails=useSelector((state)=>state.userDetails)
   const {  loading,error,user } = userDetails
 
+  const userUpdateProfile=useSelector((state)=>state.userUpdateProfile)
+  const {  loading:updateLoading } = userUpdateProfile
+
   useEffect(()=>{
     if(user){
       setName(user.name)
@@ -38,18 +42,24 @@ export const ProfileTabs = () => {
     //Password match
     if(password !== confirmPassword)
     {
-      toastId.current=toast.error("Password does not match",Toastobjects  )
-    }else{
-      //UPDATE PROFILE
-      alert("Password  match")
-
+     if (!toast.isActive(toastId.current)) {
+      toastId.current=toast.error("Password does not match",Toastobjects)
+     }
+    } 
+    else{
+        //UPDATE PROFILE
+        dispatch(updateUserProfile({id:user._id,name,email,password}))
+        if (!toast.isActive(toastId.current)) {
+          toastId.current=toast.success("Profile updated",Toastobjects)
+         }
+      }
     }
-  }
   return (
     <>
     <Toast/>
     {error && <Message variant="alert-danger">{error}</Message>}
     {loading && <Loading/>}
+    {updateLoading && <Loading/>}
       <form className='row form-container' onSubmit={submitHandler}>
         <div className='col-md-6'>
           <div className='form'>
@@ -76,6 +86,7 @@ export const ProfileTabs = () => {
           <div className='form'>
             <label for='account-pass'>Confirm Password</label>
             <input className='form-control' type='password' 
+            value={confirmPassword} onChange={(e)=>setconfirmPassword(e.target.value)}
             />
           </div>
         </div>
