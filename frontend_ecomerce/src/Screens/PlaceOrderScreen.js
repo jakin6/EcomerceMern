@@ -1,10 +1,29 @@
 import React from 'react'
 import Header from '../Components/Header';
 import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux';
+import Message from "../Components/LoadingError/Error"
 
 const PlaceOrderScreen = () => {
     window.scrollTo(0, 0);
+
+    const dispatch=useDispatch()
+    const cart=useSelector((state)=>state.cart)
+    const userLogin=useSelector((state)=>state.userLogin)
+    const {userInfo}=userLogin
+
+    //Calculate Price
+    const addDecimals = (num)=>{
+        return (Math.round(num*100)/100).toFixed(2)
+    }
+
+    cart.itemsPrice=addDecimals(
+        cart.cartItems.reduce((acc,item)=>acc +item.price * item.qty,0)
+    )
+
+    cart.shippingPrice=addDecimals(cart.itemsPrice>100 ? 0 : 50);
     const placeOrderHandler = (e) => {
+        dispatch()
         e.preventDefault();
     }
   return (
@@ -19,8 +38,8 @@ const PlaceOrderScreen = () => {
                           </div>
                           <div className="col-md-8 center">
                               <h5><strong>Customer</strong></h5>
-                              <p>kj</p>
-                              <p>irija@gmail.com</p>
+                              <p>{userInfo.name}</p>
+                              <p>{userInfo.email}</p>
                           </div>
                       </div>
                   </div>
@@ -31,8 +50,8 @@ const PlaceOrderScreen = () => {
                           </div>
                           <div className="col-md-8 center">
                               <h5><strong>Order info</strong></h5>
-                              <p>Shipping: Burundi</p>
-                              <p>Pay method: </p>
+                              <p>Shipping: {cart.shippingAddress.country}</p>
+                              <p>Pay method:{cart.paymentMethod} </p>
                           </div>
                       </div>
                   </div>
@@ -43,41 +62,78 @@ const PlaceOrderScreen = () => {
                           </div>
                           <div className="col-md-8 center">
                               <h5><strong>Deliver to</strong></h5>
-                              <p>Address: Bujumbura, Bujumbura -Mairie, Ntahangwa, Kamenge, 257 79526728</p>
+                              <p>Address: {cart.shippingAddress.city},{" "}
+                                 {cart.shippingAddress.address},{" "}
+                                {cart.shippingAddress.postalCode}</p>
                           </div>
                       </div>
                   </div>
               </div>
               <div className="row order-products justify-content-between">
                   <div className="col-lg-8">
-                      <div className="alert alert-info mt-5">Your cart is empty</div>
+                    {
+                        cart.cartItems.length === 0?(
+                            <Message variant="alert-info mt-5">Your  cart is empty</Message>
+                        ):(
+                            <>
+                            {
+                                cart.cartItems.map((item,index)=>{
+                                    <div className='order-product row' key={index}>
+                                        <div className='col-md-3 col-6'>
+                                            <img src={item.image} alt={item.name}/>
+                                        </div>
+                                        <div className='col-md-5 col-6 d-flex align-items-center'>
+                                            <Link to={`/products/${item.product}`}>
+                                                <h6>{item.name}</h6>
+                                            </Link>
+                                        </div>
+
+                                        <div className='mt-3 mt-md-0 col-md-2 col-6 d-flex align-items-center'>
+                                            <h4>QUANTITY</h4>
+                                            <h6>{item.qty}</h6>
+                                        </div>
+                                        <div className='mt-3 mt-md-0 col-md-2 col-6 d-flex align-items-center'>
+                                            <h4>SUBTOTAL</h4>
+                                            <h6>${item.qty * item.price}</h6>
+                                        </div>
+                                    </div>
+                                })
+                            }
+                            </>
+                        )
+                    }
+                      {/* <div className="alert alert-info mt-5">Your cart is empty</div> */}
                   </div>
                   <div className="col-lg-3 d-flex align-items-end flex-column mt-5 subtotal-order">
                       <table className="table table-bordered">
                           <tbody>
                               <tr>
                                   <td><strong>Products</strong></td>
-                                  <td>$0.00</td>
+                                  <td>${cart.itemsPrice}</td>
                               </tr>
                               <tr>
                                   <td><strong>Shipping</strong></td>
-                                  <td>$100.00</td>
+                                  <td>${cart.shippingPrice}</td>
                               </tr>
                               <tr>
                                   <td><strong>Tax</strong></td>
-                                  <td>$0.00</td>
+                                  <td>${cart.taxPrice}</td>
                               </tr>
                               <tr>
                                   <td><strong>Total</strong></td>
-                                  <td>$100.00</td>
+                                  <td>${cart.totalPrice}</td>
                               </tr>
                           </tbody>
                       </table>
-                      <button type='submit' onClick={placeOrderHandler}>
-                          <Link to='/order' classNameName='text-white'>
-                              PLACE ORDER
-                          </Link>
-                      </button>
+
+                      {
+                        cart.cartItems.length === 0?null:(
+                        <button type='submit' onClick={placeOrderHandler}>
+                            PLACE ORDER
+                        </button>
+                        )
+                      }
+
                   </div>
               </div>
           </div>

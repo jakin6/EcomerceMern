@@ -115,7 +115,7 @@ export const updateUserProfile =(user)=> async (dispatch,getState) => {
                 Authorization:`Bearer ${userInfo.token}`
             }
         }
-        const { data } = await axios.get(`/api/users/profile`,user,
+        const { data } = await axios.put(`/api/users/profile`,user,
             config
         )
         dispatch({ type: USER_UPDATE_PROFILE_SUCCESS, payload: data })
@@ -128,7 +128,7 @@ export const updateUserProfile =(user)=> async (dispatch,getState) => {
 
         if(message==="Not authorized, token failed"){
             dispatch(logout())
-        }
+        } 
         dispatch({
             type: USER_UPDATE_PROFILE_FAIL,
             payload:message,

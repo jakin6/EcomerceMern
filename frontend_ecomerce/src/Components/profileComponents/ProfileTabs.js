@@ -59,6 +59,7 @@ export const ProfileTabs = () => {
     <Toast/>
     {error && <Message variant="alert-danger">{error}</Message>}
     {loading && <Loading/>}
+    
     {updateLoading && <Loading/>}
       <form className='row form-container' onSubmit={submitHandler}>
         <div className='col-md-6'>
