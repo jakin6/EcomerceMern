@@ -1,16 +1,22 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Header from '../Components/Header';
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import Message from "../Components/LoadingError/Error"
+import {ORDER_CREATE_RESET } from "../app/Constants/OrderConstants"
+import {createOrder} from '../app/Actions/OrderActions.js'
 
-const PlaceOrderScreen = () => {
+
+const PlaceOrderScreen = ({ history }) => {
     window.scrollTo(0, 0);
 
     const dispatch=useDispatch()
     const cart=useSelector((state)=>state.cart)
     const userLogin=useSelector((state)=>state.userLogin)
+    const orderCreate=useSelector((state)=>state.orderCreate)
+
     const {userInfo}=userLogin
+    const {order,success,error}=orderCreate
 
     //Calculate Price
     const addDecimals = (num)=>{
@@ -18,13 +24,35 @@ const PlaceOrderScreen = () => {
     }
 
     cart.itemsPrice=addDecimals(
-        cart.cartItems.reduce((acc,item)=>acc +item.price * item.qty,0)
+        cart.cartItems.reduce((acc,item)=>acc + item.price * item.qty, 0)
     )
 
     cart.shippingPrice=addDecimals(cart.itemsPrice>100 ? 0 : 50);
-    const placeOrderHandler = (e) => {
-        dispatch()
-        e.preventDefault();
+    cart.taxPrice=addDecimals(Number((0.15*cart.itemsPrice).toFixed(2)))
+    cart.totalPrice=(
+        Number(cart.itemsPrice)+
+        Number(cart.shippingPrice)+
+        Number(cart.taxPrice)
+        ).toFixed(2)
+     
+
+
+    useEffect(()=>{
+        if(success){
+            history.push(`/order/${order._id}`)
+            dispatch({type:ORDER_CREATE_RESET})
+        }
+    },[history,dispatch,success,order])
+
+    const placeOrderHandler = () => {
+        dispatch(createOrder({
+            orderItems:cart.cartItems,
+            shippingAddress:cart.shippingAddress,
+            paymentMethod:cart.paymentMethod,
+            shippingPrice:cart.shippingPrice,
+            taxPrice:cart.taxPrice,
+            totalPrice:cart.totalPrice,
+        }))
     }
   return (
       <>
@@ -74,10 +102,11 @@ const PlaceOrderScreen = () => {
                     {
                         cart.cartItems.length === 0?(
                             <Message variant="alert-info mt-5">Your  cart is empty</Message>
-                        ):(
+                        )
+                        :(
                             <>
                             {
-                                cart.cartItems.map((item,index)=>{
+                                cart.cartItems.map((item,index)=>(
                                     <div className='order-product row' key={index}>
                                         <div className='col-md-3 col-6'>
                                             <img src={item.image} alt={item.name}/>
@@ -88,16 +117,16 @@ const PlaceOrderScreen = () => {
                                             </Link>
                                         </div>
 
-                                        <div className='mt-3 mt-md-0 col-md-2 col-6 d-flex align-items-center'>
+                                        <div class="mt-3 mt-md-0 col-md-2 col-6  d-flex align-items-center flex-column justify-content-center ">
                                             <h4>QUANTITY</h4>
                                             <h6>{item.qty}</h6>
                                         </div>
-                                        <div className='mt-3 mt-md-0 col-md-2 col-6 d-flex align-items-center'>
+                                        <div class="mt-3 mt-md-0 col-md-2 col-6 align-items-end  d-flex flex-column justify-content-center ">
                                             <h4>SUBTOTAL</h4>
                                             <h6>${item.qty * item.price}</h6>
                                         </div>
                                     </div>
-                                })
+                                ))
                             }
                             </>
                         )
@@ -125,7 +154,6 @@ const PlaceOrderScreen = () => {
                               </tr>
                           </tbody>
                       </table>
-
                       {
                         cart.cartItems.length === 0?null:(
                         <button type='submit' onClick={placeOrderHandler}>
@@ -133,7 +161,13 @@ const PlaceOrderScreen = () => {
                         </button>
                         )
                       }
-
+                      {
+                        error && (
+                            <div className='my-3 col-12'>
+                                <Message variant="alert-danger">{error}</Message>
+                            </div>
+                        )
+                      }
                   </div>
               </div>
           </div>

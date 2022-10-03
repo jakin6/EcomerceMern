@@ -1,14 +1,32 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { PayPalButton } from 'react-paypal-button-v2'
+import { useDispatch } from 'react-redux'
+import { getOrderDetails } from '../app/Actions/OrderActions'
 import Header from '../Components/Header'
+import Message from '../Components/LoadingError/Error'
+import Loading from '../Components/LoadingError'
 
-const OrderScreen = () => {
+const OrderScreen = ({}) => {
     window.scrollTo(0, 0)
+
+    const orderId=match.params.id
+    const dispatch=useDispatch()
+    const orderDetails=useSelector((state)=>state.orderDetails)
+    const {order,loading,error}=orderDetails
+
+    useEffect(()=>{
+        dispatch(getOrderDetails(orderId))
+    },[dispatch,orderId])
+
     return (
         <>
             <Header />
             <div className="container">
-                <div className="row order-detail">
+                {
+                    loading ? (<Loading/>):error?(<Message variant="alert-danger" >{error}</Message>):
+                    (
+                        <>
+                                        <div className="row order-detail">
                     <div className="col-lg-4 col-sm-4 mb-lg-4 mb-5 mb-sm-0">
                         <div className="row">
                             <div className="col-md-4 center">
@@ -109,12 +127,18 @@ const OrderScreen = () => {
                                 </tr>
                             </tbody>
                         </table>
+                        
+                    <div className="col-12">
+                        <PayPalButton />
+                    </div>
                     </div>
                 </div>
+                        </>
+                    )
+                }
+
             </div>
-            <div className="col-12">
-                <PayPalButton />
-            </div>
+
         </>
     )  
 }
