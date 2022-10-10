@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { PayPalButton } from 'react-paypal-button-v2'
 import { useDispatch, useSelector } from 'react-redux'
 import { getOrderDetails } from '../app/Actions/OrderActions'
@@ -11,10 +11,15 @@ import { Link } from 'react-router-dom'
 const OrderScreen = ({match}) => {
     window.scrollTo(0, 0)
 
+    const[sdkReady,setSdkReady]=useState(false)
     const orderId=match.params.id
     const dispatch=useDispatch()
+
     const orderDetails=useSelector((state)=>state.orderDetails)
     const {order,loading,error}=orderDetails
+
+    const orderPay=useSelector((state)=>state.orderPay)
+    const {loading:loadingPay,success:successPay}=orderPay
 
     if(!loading){
         const addDecimals = (num)=>{
@@ -38,6 +43,13 @@ const OrderScreen = ({match}) => {
 
 
     useEffect(()=>{
+
+        const addPayPalScript=async()=>{
+            const {data:clientID}=await axios.get("/api/config/paypal")
+            const script=document.createElement("script")
+            script.type="text/javascript"
+            script.src=`https://www.paypal.com/sdk/js?client-id=${clientID}`
+        }
         dispatch(getOrderDetails(orderId))
     },[dispatch,orderId])
 
